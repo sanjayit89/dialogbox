@@ -12,14 +12,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace WpfApplication1.Views
+namespace WpfApplication1.Dialogs.DialogYesNo
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for DialogYesNoView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class DialogYesNoView : UserControl
     {
-        public MainWindow()
+        public DialogYesNoView()
         {
             InitializeComponent();
         }

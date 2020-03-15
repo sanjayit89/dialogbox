@@ -1,0 +1,56 @@
+﻿<Window x:Class="ResponsiveLayout.TabControlLayout"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ResponsiveLayout"
+        xmlns:usercontrol="clr-namespace:ResponsiveLayout.UserControl"
+        mc:Ignorable="d"
+        Title="TabControlLayout" Height="450" Width="800">
+    <Grid>
+       
+        <TabControl Height="310" Grid.Column="1" MouseWheel="TabControl_MouseWheel" Grid.Row="6" Grid.RowSpan="8" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="5,5,20,0" VerticalAlignment="Top" >
+            <TabItem Header="LTE">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition MinHeight="10" Height="30"/>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="50" Width="50"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="FDD_Panel" Background="#C7C7C7" CornerRadius="1" BorderBrush="Black" 
+                            BorderThickness="1" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" >
+                        <StackPanel  Orientation="Horizontal" >
+                            <TextBlock Text="FDD" Width="50" TextAlignment="Center" VerticalAlignment="Center"/>
+                            <usercontrol:BandView Grid.Row="1" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></usercontrol:BandView>
+                        </StackPanel>
+                    </Border>
+                    <Border x:Name="TDD_Panel" Background="#C7C7C7" CornerRadius="1" BorderBrush="Black" Margin="1,1"
+                            BorderThickness="1" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" >
+                        <StackPanel  Orientation="Horizontal" >
+                            <TextBlock Text="TDD" Width="50" TextAlignment="Center" VerticalAlignment="Center"/>
+                            <usercontrol:BandView Grid.Row="1" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></usercontrol:BandView>
+                        </StackPanel>
+                    </Border>
+                    <!--<TextBlock Text="Band" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Padding="10"/>
+                    <Border Grid.Row="1" Grid.ColumnSpan="2" Padding="5">-->
+                        <!--<StackPanel Orientation="Horizontal">-->
+                        
+                        <!--</StackPanel>-->
+                    <!--</Border>-->
+                </Grid>
+                <!--<Label x:Name="LTE_Band" Content="Band" VerticalAlignment="Top"/>-->
+                
+            </TabItem>
+            <TabItem Header="NR">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="MRDC">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

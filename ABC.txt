@@ -1,0 +1,439 @@
+private log4net.ILog log = log4net.LogManager.GetLogger("Creeping_Acquisition_view");
+
+private string Save_CSV(System.Data.DataTable DT_Result, string DateFirst, string DateSecond, string[] intsequence, string[] intsequence_second,bool is_folio)
+        {
+            #region Decleration 
+            string Folderpath = string.Empty;
+            decimal change = 0;
+            string[] class_of_share;
+            string class_of_share_temp = string.Empty;
+            string strCsvFileName = string.Empty;
+            string strFolderPath = string.Empty;
+            CommonLogic objCommon;            
+            StringBuilder sbRowData;
+            StreamWriter swFileWrite;
+            int intsrno = 0;
+            #endregion
+            #region try block
+            try
+            {
+                sbRowData = new StringBuilder();
+                objCommon = new CommonLogic();
+
+                strCsvFileName = objCommon.GetFileName(StaticMsg.strcsv);
+                strFolderPath = objCommon.getString(StaticMsg.s_value, StaticMsg.Table_Name_1, StaticMsg.Where_2, StaticMsg.Compare_key, StaticMsg.Compare_value);
+
+                swFileWrite = new StreamWriter(Server.MapPath(strFolderPath) + strCsvFileName, false);   
+
+                strparameter = "@Hightlight";
+                strvalues = "highlight percentage";
+                if (txtHPercent.Text == "" || txtHPercent.Text == null)
+                {
+                    change = Convert.ToDecimal(objCommon.getString("s.value", "m_system_setting s", "s.key=@Hightlight", strparameter, strvalues));
+                }
+                else
+                {
+                    change = Convert.ToDecimal(txtHPercent.Text);
+                }
+                class_of_share = Hiddenclass_of_share.Value.ToString().TrimEnd(',').Split(',');
+
+                for (int i = 0; i < class_of_share.Length; i++)
+                {
+                    if (!class_of_share_temp.Contains(class_of_share[i]))
+                    {
+                        class_of_share_temp += class_of_share[i] + ",";
+                    }
+                }
+                class_of_share = Hiddenclass_of_share.Value.ToString().TrimEnd(',').Split(',');
+                #region File headers
+                swFileWrite.WriteLine(objCommon.getString(StaticMsg.s_value, StaticMsg.Table_Name_1, StaticMsg.where_6, StaticMsg.Compare_cmp_name, StaticMsg.cmp_name_value));//StaticMsg.Header_1;
+                swFileWrite.WriteLine(StaticMsg.Header_Creeping);
+
+                DateFirst = DateTime.Parse(DateFirst).ToString("dd-MMM-yyyy");
+                DateSecond = DateTime.Parse(DateSecond).ToString("dd-MMM-yyyy");
+                swFileWrite.WriteLine(StaticMsg.strQote + StaticMsg.classofshare + class_of_share_temp.TrimEnd(',') + StaticMsg.strQote);
+                swFileWrite.WriteLine(StaticMsg.Effective_date_1 + DateFirst);
+                swFileWrite.WriteLine(StaticMsg.Effective_date_2 + DateSecond);
+                #endregion
+                #region table headers
+                sbRowData.Append(StaticMsg.HeaderSr_No + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.HeaderPAN + StaticMsg.strComma);
+                if (is_folio)
+                {
+                    sbRowData.Append(StaticMsg.HeaderFolio + StaticMsg.strComma);
+                }
+                sbRowData.Append(StaticMsg.HeaderName + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Category + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Header_Holding_as + DateFirst + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Header_Per_Capital + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Header_Holding_as + DateSecond + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Header_Per_Capital + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Header_Change_Holdings + StaticMsg.strComma);
+                sbRowData.Append(StaticMsg.Header_Change_To_Capital);
+
+                swFileWrite.WriteLine(sbRowData.ToString());
+                sbRowData.Clear();
+                #endregion
+                #region data write to the file
+                for (int count = 0; count < DT_Result.Rows.Count; count++)
+                {
+                    if (DT_Result.Rows[count][StaticMsg.sr_no].ToString() != string.Empty)
+                    {
+                        intsrno++;
+                        sbRowData.Append(intsrno + StaticMsg.strComma);
+                    }
+                    else
+                    {
+                        sbRowData.Append(StaticMsg.strComma);
+                    }
+
+                    if (DT_Result.Rows[count][StaticMsg.pan].ToString() != string.Empty)
+                    {
+                        sbRowData.Append(DT_Result.Rows[count][StaticMsg.pan].ToString() + StaticMsg.strComma);
+                    }
+                    else
+                    {
+                        sbRowData.Append(StaticMsg.strComma);
+                    }
+                    if (is_folio)
+                    {
+                        if (DT_Result.Rows[count][StaticMsg.folio].ToString() != string.Empty)
+                        {
+                            sbRowData.Append(DT_Result.Rows[count][StaticMsg.folio].ToString() + StaticMsg.strComma);
+                        }
+                        else
+                        {
+                            sbRowData.Append(StaticMsg.strComma);
+                        }
+                    }
+
+                    if (DT_Result.Rows[count][StaticMsg.shareholder_name].ToString() != string.Empty)
+                    {
+                        sbRowData.Append(StaticMsg.strQote + DT_Result.Rows[count][StaticMsg.shareholder_name].ToString() + StaticMsg.strQote + StaticMsg.strComma);
+                    }
+                    else
+                    {
+                        sbRowData.Append(StaticMsg.strComma);
+                    }
+
+                    if (!DT_Result.Rows[count][StaticMsg.pan].ToString().Contains(StaticMsg.Total))
+                    {
+                        sbRowData.Append(StaticMsg.promoter + StaticMsg.strComma);
+                    }
+                    else
+                    {
+                        sbRowData.Append(StaticMsg.strComma);
+                    }
+                    sbRowData.Append(objCommon.Get_Int_String_ThowsandSep(DT_Result.Rows[count][StaticMsg.shareholding_first].ToString()));
+                    sbRowData.Append(objCommon.Get_Descimal_String_Two_Digit(DT_Result.Rows[count][StaticMsg.capital_per_first].ToString()));
+                    sbRowData.Append(objCommon.Get_Int_String_ThowsandSep(DT_Result.Rows[count][StaticMsg.shareholding_second].ToString()));
+                    sbRowData.Append(objCommon.Get_Descimal_String_Two_Digit(DT_Result.Rows[count][StaticMsg.capital_per_second].ToString()));
+                    sbRowData.Append(objCommon.Get_Int_String_ThowsandSep(DT_Result.Rows[count][StaticMsg.change_total_holding].ToString()));
+                    sbRowData.Append(objCommon.Get_Descimal_String_Two_Digit(DT_Result.Rows[count][StaticMsg.capital_per_change].ToString()));
+                    
+                    swFileWrite.WriteLine(sbRowData.ToString());
+                    sbRowData.Clear();
+                }
+                #endregion
+                swFileWrite.Close();
+            }
+            #endregion
+            #region catch block
+            catch (Exception ex)
+            {
+                if (log.IsErrorEnabled)
+                {
+                    log.Error(ex.Message);
+                    log.Error(ex.StackTrace);
+                }
+                throw ex;
+            }
+            #endregion
+            #region finally
+            finally
+            {
+                objCommon = null;
+            }
+            #endregion
+            return strCsvFileName;
+        }
+
+public string GetFileName(string extension)
+        {
+            string newfilename = string.Empty;
+            string Day;
+            string Mon;
+            if (DateTime.Now.Day.ToString().Length == 1)
+            {
+                Day = "0" + DateTime.Now.Day.ToString();
+            }
+            else
+            {
+                Day = DateTime.Now.Day.ToString();
+            }
+            //to get the month and append 0 if it is single digit
+            if (DateTime.Now.Month.ToString().Length == 1)
+            {
+                Mon = "0" + DateTime.Now.Month.ToString() + string.Empty;
+            }
+            else
+            {
+                Mon = DateTime.Now.Month.ToString();
+            }
+            // file ne name creation
+            newfilename = "" + DateTime.Now.Year.ToString() + Mon + Day + "_" + DateTime.Now.Hour.ToString() + DateTime.Now.Minute.ToString() + DateTime.Now.Second.ToString() + extension;
+            return newfilename;
+        }
+
+        public string write_csv(string strFileHeader,string strTableHeader,DataTable dtFileData,string strFileName)
+        {
+            StreamWriter swFileWrite;
+            StringBuilder sbRowData;
+            //string strFileName = string.Empty;
+            //string strCsvFileName = string.Empty;
+            //string strFolderPath = string.Empty;
+
+            try
+            {
+                sbRowData = new StringBuilder();
+
+                //strCsvFileName = GetFileName(StaticMsg.strcsv);
+                //strFolderPath = getString(StaticMsg.s_value, StaticMsg.Table_Name_1, StaticMsg.Where_2, StaticMsg.Compare_key, StaticMsg.Compare_value);
+
+                swFileWrite = new StreamWriter(strFileName, false);
+
+                swFileWrite.WriteLine(strFileHeader);
+                swFileWrite.WriteLine(strTableHeader);
+                for (int i = 0; i < dtFileData.Rows.Count; i++)
+                {
+                    for (int j = 0; j < dtFileData.Columns.Count; j++)
+                    {
+                        sbRowData.Append(dtFileData.Rows[i][j].ToString() + ",");
+                    }
+                    swFileWrite.WriteLine(sbRowData.ToString());
+                    sbRowData.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                swFileWrite = null;
+                sbRowData = null;
+            }
+            return strFileName;
+        }
+namespace WPFImportExportCSV.Views.Pages
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Data;
+    using System.Windows.Documents;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using System.Windows.Media.Imaging;
+    using System.Windows.Navigation;
+    using System.Windows.Shapes;
+    using CSVLibraryAK;
+    using CSVLibraryAK.Resources.Constants;
+    using Microsoft.Win32;
+
+    /// <summary>
+    /// Interaction logic for Home Page
+    /// </summary>
+    public partial class HomePage : Page
+    {
+        #region Private properties.
+
+        /// <summary>
+        /// Data table property.
+        /// </summary>
+        private DataTable dataTableObj = new DataTable();
+
+        #endregion
+
+        #region Default Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HomePage" /> class.
+        /// </summary>
+        public HomePage()
+        {
+            try
+            {
+                // Initialization.
+                this.InitializeComponent();
+
+                // Loaded.
+                this.Loaded += this.HomePage_Loaded;
+            }
+            catch (Exception ex)
+            {
+                // Info.
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.Write(ex);
+            }
+        }
+
+        #endregion
+
+        #region Page Loaded event method.
+
+        /// <summary>
+        /// Page Loaded event method
+        /// </summary>
+        /// <param name="sender">Sender parameter</param>
+        /// <param name="e">Event parameter</param>
+        private void HomePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+            }
+            catch (Exception ex)
+            {
+                // Info.
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.Write(ex);
+            }
+        }
+
+        #endregion
+
+        #region Export click event method.
+
+        /// <summary>
+        /// Export click event method.
+        /// </summary>
+        /// <param name="sender">Sender parameter</param>
+        /// <param name="e">Event parameter</param>
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Verification.
+                if (this.dataTableObj.Rows.Count <= 0)
+                {
+                    // Message.
+                    MessageBox.Show("There is no data available to export.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                    // Info.
+                    return;
+                }
+
+                // Initialization.
+                SaveFileDialog exportDialog = new SaveFileDialog();
+
+                // Settings.
+                exportDialog.Filter = Strings.FILE_TYPES_FILTER_1;
+
+                // Verification.
+                if (exportDialog.ShowDialog() == true)
+                {
+                    // Export to CSV file.
+                    CSVLibraryAK.Export(exportDialog.FileName, this.dataTableObj);
+
+                    // Info.
+                    MessageBox.Show("Data has been sucessfully exported to CSV file", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Info.
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.Write(ex);
+            }
+        }
+
+        #endregion
+
+        #region Browse click event method.
+
+        /// <summary>
+        /// Browse click event method.
+        /// </summary>
+        /// <param name="sender">Sender parameter</param>
+        /// <param name="e">Event parameter</param>
+        private void BtnBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Initialization.
+                OpenFileDialog browseDialog = new OpenFileDialog();
+                DataTable datatable = new DataTable();
+
+                // Settings.
+                browseDialog.Filter = Strings.FILE_TYPES_FILTER_1;
+
+                // Verification
+                if (browseDialog.ShowDialog() == true)
+                {
+                    // Settings.
+                    this.txtFilePath.Text = browseDialog.FileName;
+
+                    // Initialization.
+                    string filePath = this.txtFilePath.Text;
+                    bool isExist = this.chkHasHeader.IsChecked.Value;
+
+                    // Import CSV file.
+                    datatable = CSVLibraryAK.Import(filePath, isExist);
+
+                    // Verification.
+                    if (datatable.Rows.Count <= 0)
+                    {
+                        // Message.
+                        MessageBox.Show("Your file is either corrupt or does not contain any data. Make sure that you are using valid CSV file.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                        // Info.
+                        return;
+                    }
+
+                    // Load Csv to datagrid.
+                    this.grdLoad.ItemsSource = datatable.DefaultView;
+
+                    // Settings.
+                    this.dataTableObj = datatable;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Info.
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.Write(ex);
+            }
+        }
+
+        #endregion
+
+        #region Data grid loading row event method.
+
+        /// <summary>
+        /// Data grid loading row event method.
+        /// </summary>
+        /// <param name="sender">Sender parameter</param>
+        /// <param name="e">Event parameter</param>
+        private void GrdInfo_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            try
+            {
+                // Setting.
+                e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+            }
+            catch (Exception ex)
+            {
+                // Info.
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.Write(ex);
+            }
+        }
+
+        #endregion
+    }
+}
